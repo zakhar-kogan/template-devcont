@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# JS package-manager wrapper.
+#
+# Intended usage:
+#   js-pm install
+#   js-pm run build
+#
+# Behavior:
+# - If USE_BUN=true and bun exists -> uses bun
+# - Otherwise -> uses pnpm (default)
+
+want_bun="${USE_BUN:-false}"
+
+if [[ "$want_bun" == "true" ]] && command -v bun >/dev/null 2>&1; then
+  exec bun "$@"
+fi
+
+if command -v pnpm >/dev/null 2>&1; then
+  exec pnpm "$@"
+fi
+
+echo "[ERROR] pnpm is not available. Ensure fnm is initialized." >&2
+exit 127

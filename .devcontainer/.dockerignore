@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Node
+node_modules
+npm-debug.log
+
+# Python
+__pycache__
+*.py[cod]
+.venv
+venv
+.pytest_cache
+*.egg-info
+
+# Build artifacts
+dist
+build
+out
+target
+
+# IDE
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Project specific
+*.log
+coverage
+.coverage
+htmlcov
+.ruff_cache

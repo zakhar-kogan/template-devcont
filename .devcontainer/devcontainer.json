@@ -1,0 +1,82 @@
+{
+  "name": "Devcontainer Template",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "UTC",
+      "USER_UID": "1000",
+      "USER_GID": "1000",
+      "USE_BUN": "false",
+      "NODE_VERSION": "24"
+    }
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW",
+    "--env-file",
+    ".devcontainer/.env"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": true,
+      "upgradePackages": false,
+      "username": "dev"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.13",
+      "installTools": true,
+      "toolsToInstall": ["uv"]
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "sourcegraph.amp",
+        "Factory.factory-vscode-extension",
+        "ms-python.vscode-pylance",
+        "ms-python.vscode-python-envs",
+        "ms-python.debugpy",
+        "astral-sh.ruff",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "[python]": {
+          "editor.defaultFormatter": "astral-sh.ruff"
+        },
+        "editor.wordWrap": "on"
+      }
+    }
+  },
+  "remoteUser": "dev",
+  "mounts": [
+    "source=devcontainer-history-${devcontainerId},target=/commandhistory,type=volume",
+    "source=devcontainer-claude-${devcontainerId},target=/home/dev/.claude,type=volume",
+    "source=devcontainer-uv-cache-${devcontainerId},target=/home/dev/.cache/uv,type=volume",
+    "source=devcontainer-pip-cache-${devcontainerId},target=/home/dev/.cache/pip,type=volume",
+    "source=devcontainer-pnpm-cache-${devcontainerId},target=/home/dev/.local/share/pnpm,type=volume"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/dev/.claude",
+    "UV_CACHE_DIR": "/home/dev/.cache/uv",
+    "PIP_CACHE_DIR": "/home/dev/.cache/pip"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  // Ensure the user has passwordless sudo for these specific commands
+  "postStartCommand": "sudo --preserve-env=ENABLE_FIREWALL,FIREWALL_EXTRA_DOMAINS /usr/local/bin/init-firewall.sh && /usr/local/bin/configure-ai-proxy.sh",
+  "postCreateCommand": "sudo mkdir -p /commandhistory && sudo touch /commandhistory/.zsh_history && sudo chown -R dev:dev /commandhistory",
+  // Change waitFor to ensure postCreate finishes successfully
+  "waitFor": "postCreateCommand"
+}
