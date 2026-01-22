@@ -104,3 +104,67 @@ Ensure `USER_UID` and `USER_GID` match your host user:
 export USER_UID=$(id -u)
 export USER_GID=$(id -g)
 ```
+
+## Deployment
+
+This is a **development** template. For production deployment, you'll need to generate deployment-specific files.
+
+### Generate requirements.txt
+
+Most platforms need a `requirements.txt`:
+```bash
+uv export --no-dev > requirements.txt
+```
+
+### Generate Production Dockerfile
+
+The dev container Dockerfile includes dev tools, AI CLIs, firewall scripts, etc. For production, generate a minimal Dockerfile:
+
+```bash
+# Python only
+./scripts/generate-prod-dockerfile.sh
+
+# Python + Node.js
+./scripts/generate-prod-dockerfile.sh --with-node
+
+# Custom output path
+./scripts/generate-prod-dockerfile.sh --output deploy/Dockerfile
+```
+
+Then edit the generated file to set your `CMD` entrypoint.
+
+### Platform-Specific Setup
+
+| Platform | What to add | Notes |
+|----------|-------------|-------|
+| **Railway** | `Procfile` or use Dockerfile | `web: python -m src.main` |
+| **Render** | Uses Dockerfile or `requirements.txt` | Auto-detects Python |
+| **Fly.io** | `fly.toml` + Dockerfile | `fly launch` generates config |
+| **Heroku** | `Procfile` + `requirements.txt` | `web: gunicorn src.main:app` |
+| **PythonAnywhere** | WSGI config in dashboard | Upload `requirements.txt` |
+| **Vercel** | `/api` folder with handlers | Serverless functions only |
+| **Cloudflare Pages** | ❌ Not supported | Static/JS only |
+
+### Example Procfile
+
+```procfile
+# For web apps (FastAPI/Flask)
+web: uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}
+
+# For workers/scripts
+worker: python -m src.worker
+```
+
+### Example docker-compose.prod.yml
+
+```yaml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+```
